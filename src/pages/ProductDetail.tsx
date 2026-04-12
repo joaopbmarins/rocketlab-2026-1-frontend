@@ -1,7 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/atom/Button'
 import { ImagePlaceholder } from '../components/atom/Imageplaceholder'
+import { ProdutoForm } from '../components/molecules/ProdutoForm'
+import type { ProdutoUpdate } from '../types/Produto'
+import { useDeleteProduto, useUpdateProduto } from '../hooks/useProdutoMutations'
 import { useProdutosDetails } from '../hooks/useProdutosDetails'
 import { useProdutoAvaliacoes } from '../hooks/useProdutoAvaliacoes'
 
@@ -15,9 +18,48 @@ export default function ProductDetail() {
     error: avaliacoesError,
     loadAvaliacoes,
   } = useProdutoAvaliacoes()
+  const [isEditing, setIsEditing] = useState(false)
+
+  const produtoUpdateData: ProdutoUpdate | undefined = produto
+    ? {
+        nome_produto: produto.nome,
+        categoria_produto: produto.categoria ?? '',
+        peso_produto_gramas: produto.peso_gramas ?? null,
+        comprimento_centimetros: produto.comprimento_centimetros ?? null,
+        altura_centimetros: produto.altura_centimetros ?? null,
+        largura_centimetros: produto.largura_centimetros ?? null,
+      }
+    : undefined
 
   const handleLoadAvaliacoes = () => {
     loadAvaliacoes(id)
+  }
+
+  const { updateProduto, loading: updateLoading, error: updateError } = useUpdateProduto()
+  const { deleteProduto, loading: deleteLoading, error: deleteError } = useDeleteProduto()
+
+  const handleUpdateProduct = async (payload: ProdutoUpdate) => {
+    try {
+      if (!id) return
+      await updateProduto(id, payload)
+      setIsEditing(false)
+    } catch {
+      // Erro tratado pelo hook
+    }
+  }
+
+  const handleRemoveProduct = async () => {
+    if (!id) return
+
+    const confirmed = window.confirm('Deseja remover este produto?')
+    if (confirmed) {
+      try {
+        await deleteProduto(id)
+        navigate('/catalog')
+      } catch {
+        // Erro tratado pelo hook
+      }
+    }
   }
 
   useEffect(() => {
@@ -33,9 +75,17 @@ export default function ProductDetail() {
             <h1 className="mt-2 text-3xl font-semibold text-zinc-900">Informações do produto</h1>
           </div>
 
-          <Button variant="secondary" onClick={() => navigate('/catalog')}>
-            Voltar ao catálogo
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button variant="secondary" onClick={() => setIsEditing(true)}>
+              Atualizar
+            </Button>
+            <Button variant="danger" onClick={handleRemoveProduct}>
+              Remover
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/catalog')}>
+              Voltar ao catálogo
+            </Button>
+          </div>
         </div>
 
         {loading && <p className="text-zinc-600">Carregando informações...</p>}
@@ -45,6 +95,25 @@ export default function ProductDetail() {
         {!loading && !error && !produto && (
           <p className="text-zinc-600">Produto não encontrado.</p>
         )}
+
+        {produto && isEditing && produtoUpdateData && (
+          <div className="mb-10 rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+            <ProdutoForm
+              mode="update"
+              initialData={produtoUpdateData}
+              onSubmit={handleUpdateProduct}
+              onCancel={() => setIsEditing(false)}
+              submitLabel="Atualizar produto"
+              loading={updateLoading}
+            />
+            {updateError ? (
+              <p className="mt-4 text-sm text-red-600">{updateError}</p>
+            ) : null}
+          </div>
+        )}
+        {deleteError ? (
+          <p className="mb-6 text-sm text-red-600">{deleteError}</p>
+        ) : null}
 
         {produto && (
           <section className="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">

@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/atom/Button'
 import { ProductCard } from '../components/molecules/ProductCard'
+import { ProdutoForm } from '../components/molecules/ProdutoForm'
+import type { ProdutoCreate } from '../types/Produto'
+import { useCreateProduto } from '../hooks/useProdutoMutations'
 import { useProdutos } from '../hooks/useProdutos'
 
 export default function Catalog() {
@@ -9,6 +12,8 @@ export default function Catalog() {
   const [searchParams] = useSearchParams()
   const nome = searchParams.get('nome') ?? ''
   const [offset, setOffset] = useState(0)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const { createProduto, loading: createLoading, error: createError } = useCreateProduto()
   const limit = 24
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
@@ -21,6 +26,11 @@ export default function Catalog() {
   const produtos = data?.data ?? []
   const hasMore = Boolean(data && produtos.length < data.total)
   const isLoadingMore = loading && offset > 0
+
+  const handleCreateProduct = (payload: ProdutoCreate | any) => {
+    createProduto(payload as ProdutoCreate)
+    setIsFormOpen(false)
+  }
 
   useEffect(() => {
     const node = sentinelRef.current
@@ -53,9 +63,14 @@ export default function Catalog() {
             </p>
           </div>
 
-          <Button variant="secondary" onClick={() => navigate('/') }>
-            Voltar para início
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button variant="primary" onClick={() => setIsFormOpen(true)}>
+              Novo produto
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/') }>
+              Voltar para início
+            </Button>
+          </div>
         </div>
 
         {loading && offset === 0 && (
@@ -72,6 +87,19 @@ export default function Catalog() {
               ? `Nenhum produto encontrado para "${nome}".`
               : 'Nenhum produto encontrado.'}
           </p>
+        )}
+
+        {isFormOpen && (
+          <div className="mb-10 rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+            <ProdutoForm
+              onSubmit={handleCreateProduct}
+              onCancel={() => setIsFormOpen(false)}
+              loading={createLoading}
+            />
+            {createError ? (
+              <p className="mt-4 text-sm text-red-600">{createError}</p>
+            ) : null}
+          </div>
         )}
 
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">

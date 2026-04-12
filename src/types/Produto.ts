@@ -31,3 +31,21 @@ export type ProdutoDetalheResponse = {
   total_avaliacoes: number;
   media_avaliacoes: number;
 };
+
+export type ProdutoUpdate = {
+  nome_produto?: string | null;
+  categoria_produto?: string | null;
+  peso_produto_gramas?: number | null;
+  comprimento_centimetros?: number | null;
+  altura_centimetros?: number | null;
+  largura_centimetros?: number | null;
+};
+
+export type ProdutoCreate = {
+  nome_produto: string;
+  categoria_produto: string;
+  peso_produto_gramas?: number | null;
+  comprimento_centimetros?: number | null;
+  altura_centimetros?: number | null;
+  largura_centimetros?: number | null;
+};
