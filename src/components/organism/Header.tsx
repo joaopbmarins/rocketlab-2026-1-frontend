@@ -1,7 +1,33 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchBar } from '../molecules/Searchbar'
 import "./Header.css";
 
 export default function Header() {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const query = searchParams.get('nome') ?? ''
+  const [searchValue, setSearchValue] = useState(query)
+
+  useEffect(() => {
+    setSearchValue(query)
+  }, [query])
+
+  const handleSearch = (value: string) => {
+    const trimmed = value.trim()
+    setSearchValue(trimmed)
+    if (trimmed) {
+      navigate(`/catalog?nome=${encodeURIComponent(trimmed)}`)
+    } else {
+      navigate('/catalog')
+    }
+  }
+
+  const handleClear = () => {
+    setSearchValue('')
+    navigate('/catalog')
+  }
+
   return (
     <header className="header">
       <div className="header__container">
@@ -21,6 +47,10 @@ export default function Header() {
             variant="filled"
             size="md"
             fullWidth
+            value={searchValue}
+            onChange={setSearchValue}
+            onSearch={handleSearch}
+            onClear={handleClear}
           />
         </div>
 

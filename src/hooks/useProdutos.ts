@@ -5,24 +5,29 @@ import type { ProdutoListResponse } from "../types/Produto";
 type UseProdutosParams = {
   limit?: number;
   offset?: number;
+  nome?: string;
 };
 
-export function useProdutos({ limit = 50, offset = 0 }: UseProdutosParams) {
+export function useProdutos({ limit = 50, offset = 0, nome }: UseProdutosParams) {
   const [data, setData] = useState<ProdutoListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const previousOffsetRef = useRef(offset);
+  const previousNomeRef = useRef(nome);
 
   useEffect(() => {
     setLoading(true);
 
     const isAppending =
-      previousOffsetRef.current < offset && (data?.data?.length ?? 0) > 0;
+      previousNomeRef.current === nome &&
+      previousOffsetRef.current < offset &&
+      (data?.data?.length ?? 0) > 0;
     previousOffsetRef.current = offset;
+    previousNomeRef.current = nome;
 
     api
       .get<ProdutoListResponse>("/produtos/", {
-        params: { limit, offset },
+        params: { limit, offset, nome },
       })
       .then((res) => {
         setData((prevData) => {
@@ -43,7 +48,7 @@ export function useProdutos({ limit = 50, offset = 0 }: UseProdutosParams) {
       .finally(() => {
         setLoading(false);
       });
-  }, [limit, offset]);
+  }, [limit, offset, nome]);
 
   return { data, loading, error };
 }

@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../components/atom/Button'
 import { ProductCard } from '../components/molecules/ProductCard'
 import { useProdutos } from '../hooks/useProdutos'
 
 export default function Catalog() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const nome = searchParams.get('nome') ?? ''
   const [offset, setOffset] = useState(0)
   const limit = 6
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  const { data, loading, error } = useProdutos({ limit, offset })
+  useEffect(() => {
+    setOffset(0)
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [nome])
+
+  const { data, loading, error } = useProdutos({ limit, offset, nome: nome || undefined })
   const produtos = data?.data ?? []
   const hasMore = Boolean(data && produtos.length < data.total)
   const isLoadingMore = loading && offset > 0
@@ -32,7 +39,7 @@ export default function Catalog() {
 
     observer.observe(node)
     return () => observer.disconnect()
-  }, [hasMore, limit, loading])
+  }, [hasMore, limit, loading, nome])
 
   return (
     <main className="min-h-screen bg-zinc-50 px-6 py-10">
@@ -60,7 +67,11 @@ export default function Catalog() {
         )}
 
         {!loading && !error && produtos.length === 0 && (
-          <p className="mb-6 text-zinc-600">Nenhum produto encontrado.</p>
+          <p className="mb-6 text-zinc-600">
+            {nome
+              ? `Nenhum produto encontrado para "${nome}".`
+              : 'Nenhum produto encontrado.'}
+          </p>
         )}
 
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
