@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { SearchBar } from '../molecules/Searchbar'
-import "./Header.css";
 
 export default function Header() {
   const [searchParams] = useSearchParams()
@@ -29,19 +28,18 @@ export default function Header() {
   }
 
   return (
-    <header className="header">
-      <div className="header__container">
-        
-        <div className="header__brand">
-          <div className="header__logo">Shop</div>
+    <header className="fixed inset-x-0 top-0 z-50 bg-slate-950/70 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-4 py-4">
+        <div className="flex items-center gap-8">
+          <div className="text-white text-xl font-bold">Shop</div>
 
-          <nav className="header__nav">
-            <a href="" onClick={() => navigate('/')}>Início</a>
-            <a href="" onClick={() => navigate('/catalog')}>Produtos</a>
+          <nav className="hidden items-center gap-8 md:flex">
+            <button type="button" className="text-white/80 transition hover:text-white" onClick={() => navigate('/')}>Início</button>
+            <button type="button" className="text-white/80 transition hover:text-white" onClick={() => navigate('/catalog')}>Produtos</button>
           </nav>
         </div>
 
-        <div className="header__search">
+        <div className="min-w-[220px] max-w-[420px] flex-1">
           <SearchBar
             placeholder="Buscar produtos..."
             variant="filled"
@@ -54,11 +52,9 @@ export default function Header() {
           />
         </div>
 
-        {/* Ações */}
-        <div className="header__actions">
-          <button className="header__btn header__btn--primary">Carrinho</button>
+        <div className="flex items-center gap-2">
+          <button className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">Carrinho</button>
         </div>
-
       </div>
     </header>
   );

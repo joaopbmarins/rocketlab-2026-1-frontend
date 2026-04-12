@@ -9,9 +9,11 @@ import Footer from './components/organism/Footer.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Header/>
-      <App/>
-      <Footer/>
+      <Header />
+      <div className="pt-20">
+        <App />
+        <Footer />
+      </div>
     </BrowserRouter>
   </StrictMode>,
 )
