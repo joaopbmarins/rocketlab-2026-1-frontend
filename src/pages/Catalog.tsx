@@ -1,48 +1,38 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/atom/Button'
 import { ProductCard } from '../components/molecules/ProductCard'
-
-const products = [
-  {
-    id: '1',
-    title: 'Fone de ouvido sem fio',
-    imageSrc: 'https://images.unsplash.com/photo-1513708928670-6701c9152cc8?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Fone de ouvido premium',
-  },
-  {
-    id: '2',
-    title: 'Teclado mecânico RGB',
-    imageSrc: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Teclado mecânico elegante',
-  },
-  {
-    id: '3',
-    title: 'Mouse gamer ergonômico',
-    imageSrc: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Mouse para jogos',
-  },
-  {
-    id: '4',
-    title: 'Smartwatch moderno',
-    imageSrc: 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Relógio inteligente',
-  },
-  {
-    id: '5',
-    title: 'Câmera de ação à prova d’água',
-    imageSrc: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Câmera de ação',
-  },
-  {
-    id: '6',
-    title: 'Alto-falante Bluetooth portátil',
-    imageSrc: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1c?auto=format&fit=crop&w=800&q=80',
-    imageAlt: 'Alto-falante bluetooth moderno',
-  },
-]
+import { useProdutos } from '../hooks/useProdutos'
 
 export default function Catalog() {
   const navigate = useNavigate()
+  const [offset, setOffset] = useState(0)
+  const limit = 6
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  const { data, loading, error } = useProdutos({ limit, offset })
+  const produtos = data?.data ?? []
+  const hasMore = Boolean(data && produtos.length < data.total)
+  const isLoadingMore = loading && offset > 0
+
+  useEffect(() => {
+    const node = sentinelRef.current
+    if (!node || loading || !hasMore) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setOffset((previousOffset) => previousOffset + limit)
+        }
+      },
+      {
+        rootMargin: '200px',
+      }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [hasMore, limit, loading])
 
   return (
     <main className="min-h-screen bg-zinc-50 px-6 py-10">
@@ -61,17 +51,39 @@ export default function Catalog() {
           </Button>
         </div>
 
+        {loading && offset === 0 && (
+          <p className="mb-6 text-zinc-600">Carregando produtos...</p>
+        )}
+
+        {error && (
+          <p className="mb-6 text-red-600">{error}</p>
+        )}
+
+        {!loading && !error && produtos.length === 0 && (
+          <p className="mb-6 text-zinc-600">Nenhum produto encontrado.</p>
+        )}
+
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
+          {produtos.map((produto) => (
             <ProductCard
-              key={product.id}
-              imageSrc={product.imageSrc}
-              imageAlt={product.imageAlt}
-              title={product.title}
-              onViewProduct={() => alert(`Abrir página do produto: ${product.title}`)}
+              key={produto.id_produto}
+              title={produto.nome_produto}
+              imageAlt={produto.categoria_produto || 'Produto sem imagem'}
+              imageSrc={produto.link_categoria_imagem}
+              onViewProduct={() => navigate(`/produtos/${produto.id_produto}`)}
             />
           ))}
         </div>
+
+        <div ref={sentinelRef} className="h-8" />
+
+        {isLoadingMore && (
+          <p className="mt-6 text-zinc-600">Carregando mais produtos...</p>
+        )}
+
+        {!loading && !error && !hasMore && produtos.length > 0 && (
+          <p className="mt-6 text-zinc-600">Você chegou ao fim do catálogo.</p>
+        )}
       </div>
     </main>
   )
