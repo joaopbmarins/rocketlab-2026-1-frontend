@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/atom/Button'
 import { ImagePlaceholder } from '../components/atom/Imageplaceholder'
@@ -7,6 +8,10 @@ export default function ProductDetail() {
   const navigate = useNavigate()
   const { id } = useParams<{ id?: string }>()
   const { data: produto, loading, error } = useProdutosDetails(id)
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [])
 
   return (
     <main className="min-h-screen bg-zinc-50 px-6 py-10">

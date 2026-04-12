@@ -36,8 +36,8 @@ export default function Header() {
           <div className="header__logo">Shop</div>
 
           <nav className="header__nav">
-            <a href="#">Início</a>
-            <a href="#">Produtos</a>
+            <a href="" onClick={() => navigate('/')}>Início</a>
+            <a href="" onClick={() => navigate('/catalog')}>Produtos</a>
           </nav>
         </div>
 
