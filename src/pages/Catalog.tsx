@@ -9,7 +9,7 @@ export default function Catalog() {
   const [searchParams] = useSearchParams()
   const nome = searchParams.get('nome') ?? ''
   const [offset, setOffset] = useState(0)
-  const limit = 6
+  const limit = 24
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
